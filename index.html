@@ -154,7 +154,7 @@
         </aside>
     </div>
 
-    <!-- ⚙️ 개발자 옵션 모달 (비밀번호 * 마스킹 및 리더보드 중간 등록 지원) -->
+    <!-- ⚙️ 개발자 옵션 모달 (매번 비밀번호 입력 요구) -->
     <div id="dev-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
             <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2 border-b border-slate-700 pb-2">
@@ -164,8 +164,8 @@
             <!-- 1. 비밀번호 인증 영역 -->
             <div id="dev-auth-section" class="space-y-3">
                 <p class="text-xs text-slate-300">개발자 비밀번호를 입력하세요.</p>
-                <!-- type="password"로 암호 마스킹 처리 -->
                 <input type="password" id="dev-pwd-input" placeholder="비밀번호" 
+                       onkeyup="if(window.event.keyCode==13){authenticateDev()}"
                        class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
                 <div class="flex gap-2 justify-end">
                     <button onclick="closeDevModal()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded text-slate-300">취소</button>
@@ -173,7 +173,7 @@
                 </div>
             </div>
 
-            <!-- 2. 개발자 제어 영역 (인증 성공 시 표시) -->
+            <!-- 2. 개발자 제어 영역 (인증 성공 시만 표시) -->
             <div id="dev-control-section" class="hidden space-y-4">
                 <div class="flex justify-between items-center bg-slate-900/60 p-3 rounded-lg border border-slate-700">
                     <span class="text-xs font-bold text-slate-200">치트 모드 (성공확률 100%)</span>
@@ -241,16 +241,19 @@
             document.getElementById('prize-12').innerText = prizes.lvl12 > 0 ? `${prizes.lvl12}명 남음` : '마감';
             document.getElementById('prize-10').innerText = prizes.lvl10 > 0 ? `${prizes.lvl10}명 남음` : '마감';
 
-            // 개발자 모달 내부 텍스트 갱신
             document.getElementById('dev-current-lvl').innerText = maxLevelThisRun;
 
             updateLeaderboardUI();
         }
 
-        /* ⚙️ 개발자 모달 기능 조작 */
+        /* ⚙️ 개발자 모달 기능 조작 (열 때마다 비밀번호 재입력 설정) */
         function openDevModal() {
-            document.getElementById('dev-modal').classList.remove('hidden');
+            // 모달을 열 때마다 인증 화면 초기화
+            document.getElementById('dev-auth-section').classList.remove('hidden');
+            document.getElementById('dev-control-section').classList.add('hidden');
             document.getElementById('dev-pwd-input').value = '';
+            
+            document.getElementById('dev-modal').classList.remove('hidden');
             document.getElementById('dev-pwd-input').focus();
         }
 
@@ -287,7 +290,6 @@
             }
         }
 
-        // 개발자 중간 리더보드 수동 등록
         function forceAddLeaderboard() {
             const targetLvl = maxLevelThisRun > 0 ? maxLevelThisRun : currentLevel;
             if (targetLvl <= 0) {
