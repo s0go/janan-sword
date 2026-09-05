@@ -24,7 +24,7 @@
         }
         .animate-shake { animation: shake 0.3s ease-in-out; }
 
-        /* 🔥 10강 이상 은은한 특수효과 (10~14강) 🔥 */
+        /* 🔥 10강 이상 은은한 특수효과 (10~14강) 메인 박스용 🔥 */
         @keyframes mid-rainbow-border {
             0% { border-color: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
             50% { border-color: #8b5cf6; box-shadow: 0 0 15px rgba(139, 92, 246, 0.6); }
@@ -33,6 +33,31 @@
         .mid-legendary-box {
             animation: mid-rainbow-border 2.5s infinite linear;
             border: 2px solid #8b5cf6 !important;
+        }
+
+        /* ✨ 10~14강 리더보드 전용 특수 효과 (은은한 보라-블루 빛) ✨ */
+        @keyframes epic-border {
+            0% { border-color: #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.4); }
+            50% { border-color: #a855f7; box-shadow: 0 0 12px rgba(168, 85, 247, 0.6); }
+            100% { border-color: #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.4); }
+        }
+        .epic-rank {
+            animation: epic-border 3s infinite linear;
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.6), rgba(15, 23, 42, 0.8));
+            border: 2px solid #8b5cf6 !important;
+        }
+        .epic-text {
+            color: #c084fc;
+            font-weight: 800;
+        }
+        .badge-epic {
+            background: linear-gradient(90deg, #3b82f6, #a855f7);
+            color: #ffffff;
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 9999px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
         /* 🔥 15강 이상 전설의 리더보드 특수효과 🔥 */
@@ -534,6 +559,8 @@
             }
             list.innerHTML = leaderboard.map((item, index) => {
                 const isLegendary = item.level >= 15;
+                const isEpic = item.level >= 10 && item.level < 15;
+
                 if (isLegendary) {
                     return `
                     <li class="flex justify-between items-center px-3 py-2.5 rounded-lg legendary-rank">
@@ -542,6 +569,15 @@
                             <span class="legendary-text">${item.name}</span>
                         </span>
                         <span class="font-extrabold text-amber-300 text-sm tracking-wider animate-pulse">👑 +${item.level}강</span>
+                    </li>`;
+                } else if (isEpic) {
+                    return `
+                    <li class="flex justify-between items-center px-3 py-2.5 rounded-lg epic-rank">
+                        <span class="flex items-center gap-1.5 font-bold">
+                            <span class="badge-epic">EPIC</span>
+                            <span class="epic-text">${item.name}</span>
+                        </span>
+                        <span class="font-bold text-purple-300 text-sm">✨ +${item.level}강</span>
                     </li>`;
                 }
                 return `
