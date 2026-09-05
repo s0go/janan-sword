@@ -87,7 +87,7 @@
         <div>
             <p class="text-xs font-bold text-blue-400 tracking-widest uppercase">JANGAN HIGH ENGINEERING CLUB</p>
             <h1 class="text-2xl md:text-3xl font-black">장안고 공학의 정석 <span class="text-blue-400">-</span> 검 강화하기</h1>
-            <p class="text-xs text-slate-400 mt-1">26 장안고 동아리 축제 | 14강에서 15강은 ⚡ 5.00초 타이밍 미니게임!</p>
+            <p class="text-xs text-slate-400 mt-1">26 장안고 동아리 축제 | 14강에서 15강은 ⚡ 5.00초 하드코어 타이밍!</p>
         </div>
         <div class="flex gap-2">
             <button onclick="openDevModal()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-600 px-3 py-2 rounded text-slate-300 transition cursor-pointer">
@@ -209,7 +209,7 @@
     </div>
 
     <footer class="pt-6 text-center text-xs text-slate-500">
-        0~14강은 확률 강화, 15강 도전은 정확히 5.00초 맞추기 타이밍 미니게임!
+        0~14강은 확률 강화, 15강 도전은 정확히 5.00초 하드코어 맞추기! (오차범위 ±0.01초 제한)
     </footer>
 
     <!-- 자바스크립트 게임 로직 -->
@@ -249,9 +249,9 @@
             }
 
             if (currentLevel === 14 && isWaitingForTiming) {
-                // 타이머 작동 중일 때는 아래 interval에서 텍스트를 실시간 갱신하므로 여기선 기본 문구만 유지
+                // 실시간 타이머 갱신 중
             } else if (currentLevel === 14) {
-                document.getElementById('success-rate').innerText = `⚡ 다음 성공 확률: 5.00초 타이밍 미니게임! (이번 판 최고: +${maxLevelThisRun}강)`;
+                document.getElementById('success-rate').innerText = `⚡ 다음 성공 확률: 5.00초 하드코어 타겟! (±0.01초 이내만 성공)`;
             } else {
                 const baseRate = rates[Math.min(currentLevel, rates.length - 1)];
                 const displayRate = isGodMode ? 100 : baseRate;
@@ -383,14 +383,14 @@
             const icon = document.getElementById('sword-icon');
             const btn = document.getElementById('enhance-btn');
 
-            // 15강 도전일 때 (5.00초 타이밍 미니게임)
+            // 15강 도전일 때 (5.00초 하드코어 타이밍 미니게임)
             if (currentLevel === 14) {
                 if (!isWaitingForTiming) {
                     isWaitingForTiming = true;
                     startTime = Date.now();
                     btn.innerText = "멈춰!! (0.00초)";
                     btn.className = "flex-1 bg-amber-600 hover:bg-amber-500 font-bold py-4 rounded-xl text-lg shadow-lg shadow-amber-900/50 transition active:scale-95 cursor-pointer";
-                    msg.innerText = "⚡ 15강 도전! 정확히 5.00초에 버튼을 다시 눌러라!";
+                    msg.innerText = "⚡ 15강 하드코어 도전! 정확히 5.00초에 멈춰라!";
                     msg.className = "text-sm text-amber-400 font-bold h-6 text-center animate-pulse";
 
                     // 0.00초 단위 실시간 타이머 표시
@@ -412,12 +412,12 @@
                     icon.classList.add('animate-shake');
                     setTimeout(() => icon.classList.remove('animate-shake'), 300);
 
-                    // 오차범위 ±0.05초 이내 성공 (또는 치트 모드)
-                    if (Math.abs(elapsed - 5.00) <= 0.05 || isGodMode) {
+                    // 🚨 오차범위 빡세게 ±0.01초로 제한 (4.99초 ~ 5.01초만 성공) 또는 치트 모드
+                    if (Math.abs(elapsed - 5.00) <= 0.01 || isGodMode) {
                         currentLevel = 15;
                         if (currentLevel > maxLevelThisRun) maxLevelThisRun = currentLevel;
                         
-                        msg.innerText = `✨ 신의 타이밍! 15강 전설 달성! (${elapsed.toFixed(2)}초)`;
+                        msg.innerText = `✨ 신의 손길! 정확한 5.00초 맞추기 성공! (${elapsed.toFixed(2)}초)`;
                         msg.className = "text-sm text-emerald-400 font-bold h-6 text-center";
                         launchFireworks();
                         handleGameEnd(15);
@@ -425,7 +425,7 @@
                         const finalRecord = maxLevelThisRun;
                         currentLevel = 0;
                         maxLevelThisRun = 0;
-                        msg.innerText = `💥 타이밍 실패 (${elapsed.toFixed(2)}초) 검 터짐 ㅋㅋㅋ`;
+                        msg.innerText = `💥 빗나감 (${elapsed.toFixed(2)}초) 칼 터짐 ㅋㅋㅋ`;
                         msg.className = "text-sm text-rose-500 font-bold h-6 text-center";
                         handleGameEnd(finalRecord);
                     }
