@@ -76,7 +76,7 @@
         <div>
             <p class="text-xs font-bold text-blue-400 tracking-widest uppercase">JANGAN HIGH ENGINEERING CLUB</p>
             <h1 class="text-2xl md:text-3xl font-black">장안고 공학의 정석 <span class="text-blue-400">-</span> 검 강화하기</h1>
-            <p class="text-xs text-slate-400 mt-1">26 장안고 동아리 축제 | 최고 단계를 달성하고 검이 터지면 최고 기록 경품 지급!</p>
+            <p class="text-xs text-slate-400 mt-1">26 장안고 동아리 축제 | 14강에서 15강은 ⚡ 5.00초 타이밍 미니게임!</p>
         </div>
         <div class="flex gap-2">
             <button onclick="openDevModal()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-600 px-3 py-2 rounded text-slate-300 transition">
@@ -106,7 +106,7 @@
             <p id="status-msg" class="text-sm text-slate-400 h-6 text-center font-medium">버튼 눌러서 강화 시작해라.</p>
 
             <div class="w-full mt-4 flex gap-3">
-                <button id="enhance-btn" onclick="enhanceSword()" class="flex-1 bg-blue-600 hover:bg-blue-500 font-bold py-4 rounded-xl text-lg shadow-lg shadow-blue-900/50 transition active:scale-95">
+                <button id="enhance-btn" onclick="enhanceSword()" class="flex-1 bg-blue-600 hover:bg-blue-500 font-bold py-4 rounded-xl text-lg shadow-lg shadow-blue-900/50 transition active:scale-95 cursor-pointer">
                     강화하기
                 </button>
             </div>
@@ -154,7 +154,7 @@
         </aside>
     </div>
 
-    <!-- ⚙️ 개발자 옵션 모달 (매번 비밀번호 입력 요구) -->
+    <!-- ⚙️ 개발자 옵션 모달 -->
     <div id="dev-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
             <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2 border-b border-slate-700 pb-2">
@@ -173,11 +173,11 @@
                 </div>
             </div>
 
-            <!-- 2. 개발자 제어 영역 (인증 성공 시만 표시) -->
+            <!-- 2. 개발자 제어 영역 -->
             <div id="dev-control-section" class="hidden space-y-4">
                 <div class="flex justify-between items-center bg-slate-900/60 p-3 rounded-lg border border-slate-700">
                     <span class="text-xs font-bold text-slate-200">치트 모드 (성공확률 100%)</span>
-                    <button id="godmode-toggle-btn" onclick="toggleGodMode()" class="text-xs bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded font-bold">
+                    <button id="godmode-toggle-btn" onclick="toggleGodMode()" class="text-xs bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded font-bold cursor-pointer">
                         켜기
                     </button>
                 </div>
@@ -185,20 +185,20 @@
                 <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-700 space-y-2">
                     <span class="text-xs font-bold text-amber-400">⚡ 중간 기록 즉시 등록</span>
                     <p class="text-[11px] text-slate-400">검이 터지기 전 현재 단계(+<span id="dev-current-lvl">0</span>강)를 리더보드에 올립니다.</p>
-                    <button onclick="forceAddLeaderboard()" class="w-full text-xs bg-amber-600 hover:bg-amber-500 font-bold py-2 rounded text-white transition">
+                    <button onclick="forceAddLeaderboard()" class="w-full text-xs bg-amber-600 hover:bg-amber-500 font-bold py-2 rounded text-white transition cursor-pointer">
                         현재 기록 즉시 리더보드 등록
                     </button>
                 </div>
 
                 <div class="flex justify-end pt-2">
-                    <button onclick="closeDevModal()" class="text-xs bg-rose-600 hover:bg-rose-500 font-bold px-4 py-2 rounded text-white">닫기</button>
+                    <button onclick="closeDevModal()" class="text-xs bg-rose-600 hover:bg-rose-500 font-bold px-4 py-2 rounded text-white cursor-pointer">닫기</button>
                 </div>
             </div>
         </div>
     </div>
 
     <footer class="pt-6 text-center text-xs text-slate-500">
-        확률은 리셋되지 않으며 강화 실패 시 검이 파괴되고 도전이 종료됩니다.
+        0~14강은 확률 강화, 15강 도전은 정확히 5.00초 맞추기 타이밍 미니게임!
     </footer>
 
     <!-- 자바스크립트 게임 로직 -->
@@ -207,12 +207,16 @@
         let maxLevelThisRun = 0;
         let isGodMode = false;
 
-        const rates = [100, 100, 95, 95, 90, 90, 80, 75, 75, 70, 70, 65, 65, 60, 60, 50, 40, 30, 20, 10, 5];
+        // 타이밍 미니게임 변수
+        let startTime = 0;
+        let isWaitingForTiming = false;
+
+        const rates = [100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 40, 30, 20, 10]; // 0~14강 확률 (15강은 타이밍)
         const swordNames = [
             "녹슨 단검", "초보자의 숏소드", "강철 수련검", "기사의 롱소드", "은빛 세이버",
             "마법의 카타나", "화염의 플레이브", "빙결의 룬블레이드", "번개의 엑스칼리버", "용살자의 대검",
             "공학자의 플라즈마 소드", "차원의 보검", "신성한 엔지니어 소드", "장안의 마스터 소드", "전설의 공학 마스터 소드",
-            "최종 신화의 검", "초월자의 광선검", "신의 집행검", "우주 파괴자의 검", "전설의 장안 지배자"
+            "전설의 공학 마스터 소드 (15강 완료)"
         ];
 
         let prizes = JSON.parse(localStorage.getItem('sword_prizes')) || { lvl15: 1, lvl12: 3, lvl10: 10 };
@@ -222,9 +226,17 @@
             document.getElementById('sword-level-tag').innerText = `+${currentLevel} 단계`;
             document.getElementById('sword-name').innerText = swordNames[Math.min(currentLevel, swordNames.length - 1)];
             
-            const baseRate = rates[Math.min(currentLevel, rates.length - 1)];
-            const displayRate = isGodMode ? 100 : baseRate;
-            document.getElementById('success-rate').innerText = `다음 성공 확률: ${displayRate}% ${isGodMode ? '(⚡치트 100%)' : ''} (이번 판 최고: +${maxLevelThisRun}강)`;
+            const btn = document.getElementById('enhance-btn');
+
+            if (currentLevel === 14 && isWaitingForTiming) {
+                document.getElementById('success-rate').innerText = `⚡ 5.00초에 버튼을 다시 누르세요! (이번 판 최고: +${maxLevelThisRun}강)`;
+            } else if (currentLevel === 14) {
+                document.getElementById('success-rate').innerText = `⚡ 다음 성공 확률: 5.00초 타이밍 미니게임! (이번 판 최고: +${maxLevelThisRun}강)`;
+            } else {
+                const baseRate = rates[Math.min(currentLevel, rates.length - 1)];
+                const displayRate = isGodMode ? 100 : baseRate;
+                document.getElementById('success-rate').innerText = `다음 성공 확률: ${displayRate}% ${isGodMode ? '(⚡치트 100%)' : ''} (이번 판 최고: +${maxLevelThisRun}강)`;
+            }
 
             const swordIcon = document.getElementById('sword-icon');
             if (currentLevel >= 15) {
@@ -246,13 +258,10 @@
             updateLeaderboardUI();
         }
 
-        /* ⚙️ 개발자 모달 기능 조작 (열 때마다 비밀번호 재입력 설정) */
         function openDevModal() {
-            // 모달을 열 때마다 인증 화면 초기화
             document.getElementById('dev-auth-section').classList.remove('hidden');
             document.getElementById('dev-control-section').classList.add('hidden');
             document.getElementById('dev-pwd-input').value = '';
-            
             document.getElementById('dev-modal').classList.remove('hidden');
             document.getElementById('dev-pwd-input').focus();
         }
@@ -283,10 +292,10 @@
             const btn = document.getElementById('godmode-toggle-btn');
             if (isGodMode) {
                 btn.innerText = "끄기";
-                btn.className = "text-xs bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded font-bold";
+                btn.className = "text-xs bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded font-bold cursor-pointer";
             } else {
                 btn.innerText = "켜기";
-                btn.className = "text-xs bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded font-bold";
+                btn.className = "text-xs bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded font-bold cursor-pointer";
             }
         }
 
@@ -315,6 +324,11 @@
                     leaderboard = [];
                     localStorage.removeItem('sword_prizes');
                     localStorage.removeItem('sword_leaderboard');
+                    currentLevel = 0;
+                    maxLevelThisRun = 0;
+                    isWaitingForTiming = false;
+                    document.getElementById('enhance-btn').innerText = "강화하기";
+                    document.getElementById('enhance-btn').className = "flex-1 bg-blue-600 hover:bg-blue-500 font-bold py-4 rounded-xl text-lg shadow-lg shadow-blue-900/50 transition active:scale-95 cursor-pointer";
                     updateUI();
                     alert("리셋이 완료되었습니다.");
                 }
@@ -344,10 +358,55 @@
         }
 
         function enhanceSword() {
-            const rate = isGodMode ? 100 : rates[Math.min(currentLevel, rates.length - 1)];
-            const rand = Math.random() * 100;
             const msg = document.getElementById('status-msg');
             const icon = document.getElementById('sword-icon');
+            const btn = document.getElementById('enhance-btn');
+
+            // 15강 도전일 때 (5.00초 타이밍 미니게임)
+            if (currentLevel === 14) {
+                if (!isWaitingForTiming) {
+                    isWaitingForTiming = true;
+                    startTime = Date.now();
+                    btn.innerText = "멈춰!! (5.00초)";
+                    btn.className = "flex-1 bg-amber-600 hover:bg-amber-500 font-bold py-4 rounded-xl text-lg shadow-lg shadow-amber-900/50 transition active:scale-95 cursor-pointer";
+                    msg.innerText = "⚡ 15강 도전! 정확히 5.00초에 버튼을 다시 눌러라!";
+                    msg.className = "text-sm text-amber-400 font-bold h-6 text-center animate-pulse";
+                    return;
+                } else {
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    isWaitingForTiming = false;
+                    
+                    btn.innerText = "강화하기";
+                    btn.className = "flex-1 bg-blue-600 hover:bg-blue-500 font-bold py-4 rounded-xl text-lg shadow-lg shadow-blue-900/50 transition active:scale-95 cursor-pointer";
+
+                    icon.classList.add('animate-shake');
+                    setTimeout(() => icon.classList.remove('animate-shake'), 300);
+
+                    // 오차범위 ±0.05초 이내 성공 (또는 치트 모드)
+                    if (Math.abs(elapsed - 5.00) <= 0.05 || isGodMode) {
+                        currentLevel = 15;
+                        if (currentLevel > maxLevelThisRun) maxLevelThisRun = currentLevel;
+                        
+                        msg.innerText = `✨ 신의 타이밍! 15강 전설 달성! (${elapsed.toFixed(2)}초)`;
+                        msg.className = "text-sm text-emerald-400 font-bold h-6 text-center";
+                        launchFireworks();
+                        handleGameEnd(15);
+                    } else {
+                        const finalRecord = maxLevelThisRun;
+                        currentLevel = 0;
+                        maxLevelThisRun = 0;
+                        msg.innerText = `💥 타이밍 실패 (${elapsed.toFixed(2)}초) 검 터짐 ㅋㅋㅋ`;
+                        msg.className = "text-sm text-rose-500 font-bold h-6 text-center";
+                        handleGameEnd(finalRecord);
+                    }
+                    updateUI();
+                    return;
+                }
+            }
+
+            // 기존 0~14강 확률 강화 로직
+            const rate = isGodMode ? 100 : rates[Math.min(currentLevel, rates.length - 1)];
+            const rand = Math.random() * 100;
 
             icon.classList.add('animate-shake');
             setTimeout(() => icon.classList.remove('animate-shake'), 300);
@@ -359,10 +418,6 @@
                 }
                 msg.innerText = `✨ 오 성공함! (+${currentLevel} 단계)`;
                 msg.className = "text-sm text-emerald-400 font-bold h-6 text-center";
-
-                if (currentLevel === 15) {
-                    launchFireworks();
-                }
             } else {
                 const finalRecord = maxLevelThisRun;
                 currentLevel = 0;
@@ -428,6 +483,9 @@
                             clearInterval(timer);
                             currentLevel = 0;
                             maxLevelThisRun = 0;
+                            isWaitingForTiming = false;
+                            document.getElementById('enhance-btn').innerText = "강화하기";
+                            document.getElementById('enhance-btn').className = "flex-1 bg-blue-600 hover:bg-blue-500 font-bold py-4 rounded-xl text-lg shadow-lg shadow-blue-900/50 transition active:scale-95 cursor-pointer";
                             msg.innerText = "버튼 눌러서 강화 시작해라.";
                             msg.className = "text-sm text-slate-400 h-6 text-center font-medium";
                             updateUI();
