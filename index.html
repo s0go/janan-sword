@@ -24,6 +24,17 @@
         }
         .animate-shake { animation: shake 0.3s ease-in-out; }
 
+        /* 🔥 10강 이상 은은한 특수효과 (10~14강) 🔥 */
+        @keyframes mid-rainbow-border {
+            0% { border-color: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+            50% { border-color: #8b5cf6; box-shadow: 0 0 15px rgba(139, 92, 246, 0.6); }
+            100% { border-color: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+        }
+        .mid-legendary-box {
+            animation: mid-rainbow-border 2.5s infinite linear;
+            border: 2px solid #8b5cf6 !important;
+        }
+
         /* 🔥 15강 이상 전설의 리더보드 특수효과 🔥 */
         @keyframes rainbow-border {
             0% { border-color: #ff0055; box-shadow: 0 0 15px rgba(255, 0, 85, 0.6); }
@@ -79,10 +90,10 @@
             <p class="text-xs text-slate-400 mt-1">26 장안고 동아리 축제 | 14강에서 15강은 ⚡ 5.00초 타이밍 미니게임!</p>
         </div>
         <div class="flex gap-2">
-            <button onclick="openDevModal()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-600 px-3 py-2 rounded text-slate-300 transition">
+            <button onclick="openDevModal()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-600 px-3 py-2 rounded text-slate-300 transition cursor-pointer">
                 🛠️ 개발자 옵션
             </button>
-            <button onclick="resetPrizesWithPassword()" class="text-xs bg-rose-950 hover:bg-rose-900 border border-rose-800 px-3 py-2 rounded text-rose-300 transition">
+            <button onclick="resetPrizesWithPassword()" class="text-xs bg-rose-950 hover:bg-rose-900 border border-rose-800 px-3 py-2 rounded text-rose-300 transition cursor-pointer">
                 ⚙️ 리셋
             </button>
         </div>
@@ -91,7 +102,7 @@
     <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6 flex-1">
         
         <!-- 메인 게임 영역 -->
-        <main class="md:col-span-2 bg-slate-800/60 border border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-between relative overflow-hidden">
+        <main id="game-main-box" class="md:col-span-2 bg-slate-800/60 border border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-between relative overflow-hidden transition-all duration-300">
             
             <div class="text-center mt-4">
                 <span id="sword-level-tag" class="text-sm font-bold bg-blue-950 text-blue-400 border border-blue-800 px-3 py-1 rounded-full">+0 단계</span>
@@ -168,8 +179,8 @@
                        onkeyup="if(window.event.keyCode==13){authenticateDev()}"
                        class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
                 <div class="flex gap-2 justify-end">
-                    <button onclick="closeDevModal()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded text-slate-300">취소</button>
-                    <button onclick="authenticateDev()" class="text-xs bg-amber-600 hover:bg-amber-500 font-bold px-4 py-2 rounded text-white">인증</button>
+                    <button onclick="closeDevModal()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded text-slate-300 cursor-pointer">취소</button>
+                    <button onclick="authenticateDev()" class="text-xs bg-amber-600 hover:bg-amber-500 font-bold px-4 py-2 rounded text-white cursor-pointer">인증</button>
                 </div>
             </div>
 
@@ -210,8 +221,9 @@
         // 타이밍 미니게임 변수
         let startTime = 0;
         let isWaitingForTiming = false;
+        let timerInterval = null;
 
-        const rates = [100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 40, 30, 20, 10]; // 0~14강 확률 (15강은 타이밍)
+        const rates = [100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 40, 30, 20, 10]; // 0~14강 확률
         const swordNames = [
             "녹슨 단검", "초보자의 숏소드", "강철 수련검", "기사의 롱소드", "은빛 세이버",
             "마법의 카타나", "화염의 플레이브", "빙결의 룬블레이드", "번개의 엑스칼리버", "용살자의 대검",
@@ -227,9 +239,17 @@
             document.getElementById('sword-name').innerText = swordNames[Math.min(currentLevel, swordNames.length - 1)];
             
             const btn = document.getElementById('enhance-btn');
+            const mainBox = document.getElementById('game-main-box');
+
+            // 10강 이상일 때 메인 박스 은은한 특수효과 부여
+            if (currentLevel >= 10 && currentLevel < 15) {
+                mainBox.className = "md:col-span-2 bg-slate-800/80 rounded-2xl p-6 flex flex-col items-center justify-between relative overflow-hidden transition-all duration-300 mid-legendary-box";
+            } else {
+                mainBox.className = "md:col-span-2 bg-slate-800/60 border border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-between relative overflow-hidden transition-all duration-300";
+            }
 
             if (currentLevel === 14 && isWaitingForTiming) {
-                document.getElementById('success-rate').innerText = `⚡ 5.00초에 버튼을 다시 누르세요! (이번 판 최고: +${maxLevelThisRun}강)`;
+                // 타이머 작동 중일 때는 아래 interval에서 텍스트를 실시간 갱신하므로 여기선 기본 문구만 유지
             } else if (currentLevel === 14) {
                 document.getElementById('success-rate').innerText = `⚡ 다음 성공 확률: 5.00초 타이밍 미니게임! (이번 판 최고: +${maxLevelThisRun}강)`;
             } else {
@@ -327,6 +347,7 @@
                     currentLevel = 0;
                     maxLevelThisRun = 0;
                     isWaitingForTiming = false;
+                    if (timerInterval) clearInterval(timerInterval);
                     document.getElementById('enhance-btn').innerText = "강화하기";
                     document.getElementById('enhance-btn').className = "flex-1 bg-blue-600 hover:bg-blue-500 font-bold py-4 rounded-xl text-lg shadow-lg shadow-blue-900/50 transition active:scale-95 cursor-pointer";
                     updateUI();
@@ -367,14 +388,23 @@
                 if (!isWaitingForTiming) {
                     isWaitingForTiming = true;
                     startTime = Date.now();
-                    btn.innerText = "멈춰!! (5.00초)";
+                    btn.innerText = "멈춰!! (0.00초)";
                     btn.className = "flex-1 bg-amber-600 hover:bg-amber-500 font-bold py-4 rounded-xl text-lg shadow-lg shadow-amber-900/50 transition active:scale-95 cursor-pointer";
                     msg.innerText = "⚡ 15강 도전! 정확히 5.00초에 버튼을 다시 눌러라!";
                     msg.className = "text-sm text-amber-400 font-bold h-6 text-center animate-pulse";
+
+                    // 0.00초 단위 실시간 타이머 표시
+                    if (timerInterval) clearInterval(timerInterval);
+                    timerInterval = setInterval(() => {
+                        const currentElapsed = (Date.now() - startTime) / 1000;
+                        btn.innerText = `멈춰!! (${currentElapsed.toFixed(2)}초)`;
+                    }, 30);
+
                     return;
                 } else {
                     const elapsed = (Date.now() - startTime) / 1000;
                     isWaitingForTiming = false;
+                    if (timerInterval) clearInterval(timerInterval);
                     
                     btn.innerText = "강화하기";
                     btn.className = "flex-1 bg-blue-600 hover:bg-blue-500 font-bold py-4 rounded-xl text-lg shadow-lg shadow-blue-900/50 transition active:scale-95 cursor-pointer";
@@ -484,6 +514,7 @@
                             currentLevel = 0;
                             maxLevelThisRun = 0;
                             isWaitingForTiming = false;
+                            if (timerInterval) clearInterval(timerInterval);
                             document.getElementById('enhance-btn').innerText = "강화하기";
                             document.getElementById('enhance-btn').className = "flex-1 bg-blue-600 hover:bg-blue-500 font-bold py-4 rounded-xl text-lg shadow-lg shadow-blue-900/50 transition active:scale-95 cursor-pointer";
                             msg.innerText = "버튼 눌러서 강화 시작해라.";
