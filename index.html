@@ -1,374 +1,358 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>장안고 공학의 정석 - 검 강화하기</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 폭죽 라이브러리 추가 -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <style>
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        body { font-family: 'Pretendard', sans-serif; background-color: #0f172a; color: #f8fafc; }
-        
-        /* 검 광원 효과 */
-        .sword-glow { filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.5)); }
-        .sword-glow-high { filter: drop-shadow(0 0 25px rgba(234, 179, 8, 0.8)); }
-        
-        @keyframes shake {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            20% { transform: translate(-5px, 5px) rotate(-5deg); }
-            40% { transform: translate(5px, -5px) rotate(5deg); }
-            60% { transform: translate(-5px, -5px) rotate(-5deg); }
-            80% { transform: translate(5px, 5px) rotate(5deg); }
-        }
-        .animate-shake { animation: shake 0.3s ease-in-out; }
+  <meta charset="UTF-8">
+  <title>Snake Game with Dev Options</title>
+  <style>
+    body {
+      background-color: #222;
+      color: #fff;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    #game-container {
+      text-align: center;
+      position: relative;
+    }
+    canvas {
+      border: 3px solid #fff;
+      background-color: #000;
+      margin-top: 10px;
+    }
+    .input-section {
+      margin-bottom: 15px;
+    }
+    input {
+      padding: 8px 12px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 2px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    button.dev-btn {
+      background-color: #ff9800;
+    }
+    button.dev-btn:hover {
+      background-color: #e68a00;
+    }
+    #score-board {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+    
+    /* 리더보드 스타일 */
+    #leaderboard {
+      margin-top: 15px;
+      background: #333;
+      padding: 10px 20px;
+      border-radius: 8px;
+      width: 360px;
+      box-sizing: border-box;
+    }
+    #leaderboard ol {
+      text-align: left;
+      padding-left: 20px;
+      margin: 5px 0;
+    }
 
-        /* 🔥 15강 이상 전설의 리더보드 특수효과 🔥 */
-        @keyframes rainbow-border {
-            0% { border-color: #ff0055; box-shadow: 0 0 15px rgba(255, 0, 85, 0.6); }
-            25% { border-color: #00e5ff; box-shadow: 0 0 15px rgba(0, 229, 255, 0.6); }
-            50% { border-color: #ffea00; box-shadow: 0 0 18px rgba(255, 234, 0, 0.8); }
-            75% { border-color: #b000ff; box-shadow: 0 0 15px rgba(176, 0, 255, 0.6); }
-            100% { border-color: #ff0055; box-shadow: 0 0 15px rgba(255, 0, 85, 0.6); }
-        }
-
-        .legendary-rank {
-            animation: rainbow-border 3s infinite linear;
-            background: linear-gradient(135deg, rgba(30, 27, 75, 0.9), rgba(15, 23, 42, 0.9));
-            border: 2px solid #ffea00 !important;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .legendary-text {
-            background: linear-gradient(90deg, #ff007f, #ffea00, #00e5ff, #ff007f);
-            background-size: 300% 300%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradient-shift 2.5s infinite linear;
-            font-weight: 900;
-        }
-
-        @keyframes gradient-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .badge-god {
-            background: linear-gradient(90deg, #b000ff, #ff0055);
-            color: #ffffff;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 9999px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            box-shadow: 0 0 8px rgba(255, 0, 85, 0.8);
-            animation: pulse 1.5s infinite;
-        }
-    </style>
+    /* 개발자 옵션 모달 창 */
+    .modal {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #2c2c2c;
+      border: 2px solid #ff9800;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.8);
+      z-index: 100;
+      width: 280px;
+    }
+    .modal h3 {
+      margin-top: 0;
+      color: #ff9800;
+    }
+    .modal-content {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+  </style>
 </head>
-<body class="min-h-screen p-4 md:p-8 flex flex-col items-center justify-between">
+<body>
 
-    <!-- 헤더 -->
-    <header class="w-full max-w-4xl border-b border-slate-700 pb-4 mb-6 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
-        <div>
-            <p class="text-xs font-bold text-blue-400 tracking-widest uppercase">JANGAN HIGH ENGINEERING CLUB</p>
-            <h1 class="text-2xl md:text-3xl font-black">장안고 공학의 정석 <span class="text-blue-400">-</span> 검 강화하기</h1>
-            <p class="text-xs text-slate-400 mt-1">26 장안고 동아리 축제 | 최고 단계를 달성하고 검이 터지면 최고 기록 경품 지급!</p>
-        </div>
-        <div class="flex gap-2">
-            <button onclick="toggleDevMenu()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-600 px-3 py-2 rounded text-slate-300 transition">
-                🛠️ 개발자 옵션
-            </button>
-            <button onclick="resetPrizesWithPassword()" class="text-xs bg-rose-950 hover:bg-rose-900 border border-rose-800 px-3 py-2 rounded text-rose-300 transition">
-                ⚙️ 리셋
-            </button>
-        </div>
-    </header>
+<div id="game-container">
+  <h1>🐍 Snake Game</h1>
+  
+  <div class="input-section">
+    <input type="text" id="player-name" placeholder="플레이어 이름 입력" maxlength="10">
+    <button id="start-btn">게임 시작</button>
+    <button id="toggle-dev-btn" class="dev-btn">개발자 옵션</button>
+  </div>
 
-    <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6 flex-1">
-        
-        <!-- 메인 게임 영역 -->
-        <main class="md:col-span-2 bg-slate-800/60 border border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-between relative overflow-hidden">
-            
-            <div class="text-center mt-4">
-                <span id="sword-level-tag" class="text-sm font-bold bg-blue-950 text-blue-400 border border-blue-800 px-3 py-1 rounded-full">+0 단계</span>
-                <h2 id="sword-name" class="text-2xl md:text-3xl font-extrabold mt-3 text-slate-200">녹슨 단검</h2>
-                <p id="success-rate" class="text-xs text-emerald-400 mt-1">다음 성공 확률: 100%</p>
-            </div>
+  <div id="score-board">
+    현재 플레이어: <span id="current-player">-</span> | 점수: <span id="score">0</span>
+  </div>
 
-            <div class="my-8 flex items-center justify-center h-48 w-full">
-                <div id="sword-icon" class="text-8xl transition-all duration-300 sword-glow">🗡️</div>
-            </div>
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
 
-            <p id="status-msg" class="text-sm text-slate-400 h-6 text-center font-medium">버튼 눌러서 강화 시작해라.</p>
+  <!-- 리더보드 -->
+  <div id="leaderboard">
+    <h3>🏆 리더보드</h3>
+    <ol id="leaderboard-list"></ol>
+  </div>
 
-            <div class="w-full mt-4 flex gap-3">
-                <button id="enhance-btn" onclick="enhanceSword()" class="flex-1 bg-blue-600 hover:bg-blue-500 font-bold py-4 rounded-xl text-lg shadow-lg shadow-blue-900/50 transition active:scale-95">
-                    강화하기
-                </button>
-            </div>
-        </main>
-
-        <!-- 사이드바 (경품 & 랭킹) -->
-        <aside class="flex flex-col gap-6">
-            
-            <!-- 경품 현황 -->
-            <section class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5">
-                <h3 class="font-bold text-sm text-slate-300 border-b border-slate-700 pb-2 mb-3">🎁 실시간 경품 현황</h3>
-                <p class="text-[11px] text-amber-400 mb-2">* 도전 중 달성한 '최고 단계' 기준 1개만 지급</p>
-                <ul class="space-y-3 text-xs">
-                    <li class="flex justify-between items-center bg-slate-900/50 p-2.5 rounded-lg border border-slate-700/50">
-                        <div>
-                            <p class="font-bold text-amber-400">15강 이상 달성시</p>
-                            <p class="text-slate-400">매점 빵/음료 교환권</p>
-                        </div>
-                        <span id="prize-15" class="font-bold bg-amber-950 text-amber-400 border border-amber-800 px-2 py-1 rounded">남음 (1명)</span>
-                    </li>
-                    <li class="flex justify-between items-center bg-slate-900/50 p-2.5 rounded-lg border border-slate-700/50">
-                        <div>
-                            <p class="font-bold text-purple-400">12강 ~ 14강 달성시</p>
-                            <p class="text-slate-400">마이쮸 / 새콤달콤 1곽</p>
-                        </div>
-                        <span id="prize-12" class="font-bold bg-purple-950 text-purple-400 border border-purple-800 px-2 py-1 rounded">3명 남음</span>
-                    </li>
-                    <li class="flex justify-between items-center bg-slate-900/50 p-2.5 rounded-lg border border-slate-700/50">
-                        <div>
-                            <p class="font-bold text-blue-400">10강 ~ 11강 달성시</p>
-                            <p class="text-slate-400">츄파춥스 사탕 1개</p>
-                        </div>
-                        <span id="prize-10" class="font-bold bg-blue-950 text-blue-400 border border-blue-800 px-2 py-1 rounded">10명 남음</span>
-                    </li>
-                </ul>
-            </section>
-
-            <!-- 리더보드 -->
-            <section class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 flex-1">
-                <h3 class="font-bold text-sm text-slate-300 border-b border-slate-700 pb-2 mb-3">🏆 명예의 전당 (TOP 5)</h3>
-                <ol id="leaderboard" class="space-y-2 text-xs text-slate-300">
-                    <li class="text-slate-500 text-center py-4">등록된 기록이 없음.</li>
-                </ol>
-            </section>
-        </aside>
+  <!-- 개발자 옵션 모달 창 -->
+  <div id="dev-modal" class="modal">
+    <h3>⚙️ 개발자 옵션</h3>
+    <div class="modal-content">
+      <div id="dev-auth-section">
+        <!-- type="password"로 마스킹 처리 (* 표시) -->
+        <input type="password" id="dev-password" placeholder="비밀번호 입력">
+        <button id="auth-btn">인증</button>
+      </div>
+      <div id="dev-controls-section" style="display: none;">
+        <button id="add-score-btn">현재 점수 즉시 등록</button>
+        <button id="close-dev-btn" style="background-color: #f44336;">닫기</button>
+      </div>
     </div>
+  </div>
+</div>
 
-    <footer class="pt-6 text-center text-xs text-slate-500">
-        확률은 리셋되지 않으며 강화 실패 시 검이 파괴되고 도전이 종료됩니다.
-    </footer>
+<script>
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
 
-    <!-- 자바스크립트 게임 로직 -->
-    <script>
-        let currentLevel = 0;
-        let maxLevelThisRun = 0;
-        let isGodMode = false; // 개발자 치트 모드
+  const nameInput = document.getElementById("player-name");
+  const startBtn = document.getElementById("start-btn");
+  const currentPlayerDisplay = document.getElementById("current-player");
+  const scoreDisplay = document.getElementById("score");
+  const leaderboardList = document.getElementById("leaderboard-list");
 
-        const rates = [100, 100, 95, 95, 90, 90, 80, 75, 75, 70, 70, 65, 65, 60, 60, 50, 40, 30, 20, 10, 5];
-        const swordNames = [
-            "녹슨 단검", "초보자의 숏소드", "강철 수련검", "기사의 롱소드", "은빛 세이버",
-            "마법의 카타나", "화염의 플레이브", "빙결의 룬블레이드", "번개의 엑스칼리버", "용살자의 대검",
-            "공학자의 플라즈마 소드", "차원의 보검", "신성한 엔지니어 소드", "장안의 마스터 소드", "전설의 공학 마스터 소드",
-            "최종 신화의 검", "초월자의 광선검", "신의 집행검", "우주 파괴자의 검", "전설의 장안 지배자"
-        ];
+  // 개발자 옵션 관련 엘리먼트
+  const toggleDevBtn = document.getElementById("toggle-dev-btn");
+  const devModal = document.getElementById("dev-modal");
+  const devPasswordInput = document.getElementById("dev-password");
+  const authBtn = document.getElementById("auth-btn");
+  const devAuthSection = document.getElementById("dev-auth-section");
+  const devControlsSection = document.getElementById("dev-controls-section");
+  const addScoreBtn = document.getElementById("add-score-btn");
+  const closeDevBtn = document.getElementById("close-dev-btn");
 
-        let prizes = JSON.parse(localStorage.getItem('sword_prizes')) || { lvl15: 1, lvl12: 3, lvl10: 10 };
-        let leaderboard = JSON.parse(localStorage.getItem('sword_leaderboard')) || [];
+  const DEV_PASSWORD = "1234"; // 개발자 비밀번호 설정
 
-        function updateUI() {
-            document.getElementById('sword-level-tag').innerText = `+${currentLevel} 단계`;
-            document.getElementById('sword-name').innerText = swordNames[Math.min(currentLevel, swordNames.length - 1)];
-            
-            const baseRate = rates[Math.min(currentLevel, rates.length - 1)];
-            const displayRate = isGodMode ? 100 : baseRate;
-            document.getElementById('success-rate').innerText = `다음 성공 확률: ${displayRate}% ${isGodMode ? '(⚡치트 100%)' : ''} (이번 판 최고: +${maxLevelThisRun}강)`;
+  const gridSize = 20;
+  const tileCount = canvas.width / gridSize;
 
-            const swordIcon = document.getElementById('sword-icon');
-            if (currentLevel >= 15) {
-                swordIcon.className = "text-8xl transition-all duration-300 sword-glow-high text-amber-300 animate-pulse";
-            } else if (currentLevel >= 12) {
-                swordIcon.className = "text-8xl transition-all duration-300 sword-glow-high text-amber-400";
-            } else if (currentLevel >= 7) {
-                swordIcon.className = "text-8xl transition-all duration-300 sword-glow text-purple-400";
-            } else {
-                swordIcon.className = "text-8xl transition-all duration-300 sword-glow text-blue-400";
-            }
+  let snake = [];
+  let food = { x: 0, y: 0 };
+  let dx = gridSize;
+  let dy = 0;
+  let score = 0;
+  let gameInterval = null;
+  let isPlaying = false;
+  let leaderboard = [];
 
-            document.getElementById('prize-15').innerText = prizes.lvl15 > 0 ? `남음 (${prizes.lvl15}명)` : '마감';
-            document.getElementById('prize-12').innerText = prizes.lvl12 > 0 ? `${prizes.lvl12}명 남음` : '마감';
-            document.getElementById('prize-10').innerText = prizes.lvl10 > 0 ? `${prizes.lvl10}명 남음` : '마감';
+  // 방향키 컨트롤
+  window.addEventListener("keydown", (e) => {
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+      e.preventDefault();
+    }
+    if (!isPlaying) return;
 
-            updateLeaderboardUI();
-        }
+    if (e.key === "ArrowLeft" && dx === 0) { dx = -gridSize; dy = 0; }
+    if (e.key === "ArrowUp" && dy === 0) { dx = 0; dy = -gridSize; }
+    if (e.key === "ArrowRight" && dx === 0) { dx = gridSize; dy = 0; }
+    if (e.key === "ArrowDown" && dy === 0) { dx = 0; dy = gridSize; }
+  });
 
-        function toggleDevMenu() {
-            const pwd = prompt("개발자 비밀번호를 입력하세요:");
-            if (pwd === "1018") {
-                isGodMode = !isGodMode;
-                alert(`개발자 옵션 ${isGodMode ? '켜짐 (성공확률 100% 적용)' : '꺼짐 (기존 확률 적용)'}`);
-                updateUI();
-            } else if (pwd !== null) {
-                alert("비밀번호가 올바르지 않습니다.");
-            }
-        }
+  nameInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") initGame();
+  });
 
-        function resetPrizesWithPassword() {
-            const pwd = prompt("리셋하려면 관리자 비밀번호를 입력하세요:");
-            if (pwd === "1018") {
-                if (confirm("경품 남은 수량이랑 랭킹 기록을 초기화하시겠습니까?")) {
-                    prizes = { lvl15: 1, lvl12: 3, lvl10: 10 };
-                    leaderboard = [];
-                    localStorage.removeItem('sword_prizes');
-                    localStorage.removeItem('sword_leaderboard');
-                    updateUI();
-                    alert("리셋이 완료되었습니다.");
-                }
-            } else if (pwd !== null) {
-                alert("비밀번호가 올바르지 않습니다.");
-            }
-        }
+  startBtn.addEventListener("click", initGame);
 
-        function launchFireworks() {
-            var duration = 3 * 1000;
-            var animationEnd = Date.now() + duration;
-            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 999 };
+  // --- 개발자 옵션 기능 ---
+  toggleDevBtn.addEventListener("click", () => {
+    if (devModal.style.display === "block") {
+      closeDevModal();
+    } else {
+      devModal.style.display = "block";
+    }
+  });
 
-            var interval = setInterval(function() {
-                var timeLeft = animationEnd - Date.now();
-                if (timeLeft <= 0) {
-                    return clearInterval(interval);
-                }
-                var particleCount = 50 * (timeLeft / duration);
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
-            }, 250);
-        }
+  authBtn.addEventListener("click", () => {
+    if (devPasswordInput.value === DEV_PASSWORD) {
+      alert("개발자 인증 성공!");
+      devAuthSection.style.display = "none";
+      devControlsSection.style.display = "flex";
+      devPasswordInput.value = "";
+    } else {
+      alert("비밀번호가 틀렸습니다.");
+      devPasswordInput.value = "";
+    }
+  });
 
-        function randomInRange(min, max) {
-            return Math.random() * (max - min) + min;
-        }
+  addScoreBtn.addEventListener("click", () => {
+    const name = currentPlayerDisplay.textContent;
+    if (name === "-") {
+      alert("게임이 시작되지 않았습니다.");
+      return;
+    }
+    registerLeaderboard(name, score);
+    alert(`${name}의 현재 점수(${score}점)를 리더보드에 등록했습니다.`);
+  });
 
-        function enhanceSword() {
-            const rate = isGodMode ? 100 : rates[Math.min(currentLevel, rates.length - 1)];
-            const rand = Math.random() * 100;
-            const msg = document.getElementById('status-msg');
-            const icon = document.getElementById('sword-icon');
+  closeDevBtn.addEventListener("click", closeDevModal);
 
-            icon.classList.add('animate-shake');
-            setTimeout(() => icon.classList.remove('animate-shake'), 300);
+  function closeDevModal() {
+    devModal.style.display = "none";
+    devAuthSection.style.display = "block";
+    devControlsSection.style.display = "none";
+    devPasswordInput.value = "";
+  }
+  // -------------------------
 
-            if (rand < rate) {
-                currentLevel++;
-                if (currentLevel > maxLevelThisRun) {
-                    maxLevelThisRun = currentLevel;
-                }
-                msg.innerText = `✨ 오 성공함! (+${currentLevel} 단계)`;
-                msg.className = "text-sm text-emerald-400 font-bold h-6 text-center";
+  function initGame() {
+    const name = nameInput.value.trim();
+    if (!name) {
+      alert("이름을 입력해라!");
+      return;
+    }
 
-                if (currentLevel === 15) {
-                    launchFireworks();
-                }
-            } else {
-                const finalRecord = maxLevelThisRun;
-                currentLevel = 0;
-                maxLevelThisRun = 0;
+    if (gameInterval) clearInterval(gameInterval);
 
-                msg.innerText = `💥 아 검 터짐 ㅋㅋㅋ (이번 도전 최고: +${finalRecord}강)`;
-                msg.className = "text-sm text-rose-500 font-bold h-6 text-center";
+    currentPlayerDisplay.textContent = name;
+    score = 0;
+    scoreDisplay.textContent = score;
+    
+    snake = [
+      { x: 160, y: 200 },
+      { x: 140, y: 200 },
+      { x: 120, y: 200 }
+    ];
+    
+    dx = gridSize;
+    dy = 0;
+    isPlaying = true;
 
-                handleGameEnd(finalRecord);
-            }
-            updateUI();
-        }
+    spawnFood();
+    nameInput.value = "";
 
-        function handleGameEnd(finalLvl) {
-            let winMsg = "";
+    gameInterval = setInterval(gameLoop, 100);
+  }
 
-            if (finalLvl >= 15 && prizes.lvl15 > 0) {
-                prizes.lvl15--;
-                winMsg = `👑 [신화 달성] +${finalLvl}강 찍었다 ㄷㄷ [매점 빵/음료 교환권] 당첨!`;
-            } else if (finalLvl >= 12 && prizes.lvl12 > 0) {
-                prizes.lvl12--;
-                winMsg = `🎉 최고 기록 +${finalLvl}강 달성! [마이쮸/새콤달콤 1곽] 당첨!`;
-            } else if (finalLvl >= 10 && prizes.lvl10 > 0) {
-                prizes.lvl10--;
-                winMsg = `🎉 최고 기록 +${finalLvl}강 달성! [츄파춥스 사탕 1개] 당첨!`;
-            }
+  function gameLoop() {
+    if (checkGameOver()) {
+      clearInterval(gameInterval);
+      isPlaying = false;
+      const playerName = currentPlayerDisplay.textContent;
+      alert(`게임 오버! ${playerName}의 최종 점수: ${score}`);
+      registerLeaderboard(playerName, score);
+      return;
+    }
 
-            if (winMsg) {
-                localStorage.setItem('sword_prizes', JSON.stringify(prizes));
-            }
+    clearCanvas();
+    drawFood();
+    moveSnake();
+    drawSnake();
+  }
 
-            setTimeout(() => {
-                if (finalLvl >= 15) {
-                    launchFireworks();
-                }
+  function registerLeaderboard(name, score) {
+    leaderboard.push({ name, score });
+    // 점수 높은 순으로 정렬
+    leaderboard.sort((a, b) => b.score - a.score);
+    // 상위 5명만 유지
+    leaderboard = leaderboard.slice(0, 5);
+    updateLeaderboardUI();
+  }
 
-                if (winMsg) {
-                    alert(winMsg);
-                }
+  function updateLeaderboardUI() {
+    leaderboardList.innerHTML = "";
+    leaderboard.forEach((entry) => {
+      const li = document.createElement("li");
+      li.textContent = `${entry.name}: ${entry.score}점`;
+      leaderboardList.appendChild(li);
+    });
+  }
 
-                if (finalLvl >= 5) {
-                    const name = prompt(`검 터졌음 ㅋㅋㅋ 기록(+${finalLvl}강) 남길 거면 이름/학번 써라:`);
-                    if (name && name.trim() !== '') {
-                        leaderboard.push({ name: name.trim().slice(0, 8), level: finalLvl, date: new Date().toLocaleTimeString() });
-                        leaderboard.sort((a, b) => b.level - a.level);
-                        leaderboard = leaderboard.slice(0, 5);
-                        localStorage.setItem('sword_leaderboard', JSON.stringify(leaderboard));
-                        updateLeaderboardUI();
-                    }
-                }
+  function clearCanvas() {
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
 
-                if (finalLvl >= 15) {
-                    let count = 5;
-                    const msg = document.getElementById('status-msg');
-                    msg.className = "text-sm text-amber-400 font-bold h-6 text-center";
-                    msg.innerText = `👑 전설 달성! 5초 뒤 시작 화면으로 이동합니다 (${count}s)`;
+  function drawSnake() {
+    snake.forEach((part, index) => {
+      ctx.fillStyle = index === 0 ? "#81C784" : "#4CAF50";
+      ctx.fillRect(part.x, part.y, gridSize - 2, gridSize - 2);
+    });
+  }
 
-                    const timer = setInterval(() => {
-                        count--;
-                        if (count > 0) {
-                            msg.innerText = `👑 전설 달성! 5초 뒤 시작 화면으로 이동합니다 (${count}s)`;
-                        } else {
-                            clearInterval(timer);
-                            currentLevel = 0;
-                            maxLevelThisRun = 0;
-                            msg.innerText = "버튼 눌러서 강화 시작해라.";
-                            msg.className = "text-sm text-slate-400 h-6 text-center font-medium";
-                            updateUI();
-                        }
-                    }, 1000);
-                }
-            }, 100);
-        }
+  function moveSnake() {
+    const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+    snake.unshift(head);
 
-        function updateLeaderboardUI() {
-            const list = document.getElementById('leaderboard');
-            if (leaderboard.length === 0) {
-                list.innerHTML = `<li class="text-slate-500 text-center py-4">등록된 기록이 없음.</li>`;
-                return;
-            }
-            list.innerHTML = leaderboard.map((item, index) => {
-                const isLegendary = item.level >= 15;
-                if (isLegendary) {
-                    return `
-                    <li class="flex justify-between items-center px-3 py-2.5 rounded-lg legendary-rank">
-                        <span class="flex items-center gap-1.5 font-bold">
-                            <span class="badge-god">GOD</span>
-                            <span class="legendary-text">${item.name}</span>
-                        </span>
-                        <span class="font-extrabold text-amber-300 text-sm tracking-wider animate-pulse">👑 +${item.level}강</span>
-                    </li>`;
-                }
-                return `
-                <li class="flex justify-between items-center bg-slate-900/40 px-3 py-2 rounded">
-                    <span><strong class="text-blue-400 mr-2">${index + 1}.</strong>${item.name}</span>
-                    <span class="font-bold text-amber-400">+${item.level}강</span>
-                </li>`;
-            }).join('');
-        }
+    if (head.x === food.x && head.y === food.y) {
+      score += 10;
+      scoreDisplay.textContent = score;
+      spawnFood();
+    } else {
+      snake.pop();
+    }
+  }
 
-        updateUI();
-    </script>
+  function spawnFood() {
+    food.x = Math.floor(Math.random() * tileCount) * gridSize;
+    food.y = Math.floor(Math.random() * tileCount) * gridSize;
+
+    snake.forEach(part => {
+      if (part.x === food.x && part.y === food.y) spawnFood();
+    });
+  }
+
+  function drawFood() {
+    ctx.fillStyle = "#FF5252";
+    ctx.fillRect(food.x, food.y, gridSize - 2, gridSize - 2);
+  }
+
+  function checkGameOver() {
+    const head = snake[0];
+
+    const hitLeft = head.x < 0;
+    const hitRight = head.x >= canvas.width;
+    const hitTop = head.y < 0;
+    const hitBottom = head.y >= canvas.height;
+
+    if (hitLeft || hitRight || hitTop || hitBottom) return true;
+
+    for (let i = 1; i < snake.length; i++) {
+      if (head.x === snake[i].x && head.y === snake[i].y) return true;
+    }
+
+    return false;
+  }
+</script>
+
 </body>
 </html>
