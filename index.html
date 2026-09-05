@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>장안고 공학의 정석 - 검 강화하기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: 'Pretendard', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .sword-glow { filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.5)); }
+        .sword-glow-high { filter: drop-shadow(0 0 25px rgba(234, 179, 8, 0.8)); }
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-5px, 5px) rotate(-5deg); }
+            40% { transform: translate(5px, -5px) rotate(5deg); }
+            60% { transform: translate(-5px, -5px) rotate(-5deg); }
+            80% { transform: translate(5px, 5px) rotate(5deg); }
+        }
+        .animate-shake { animation: shake 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col items-center justify-between">
+
+    <!-- 헤더 -->
+    <header class="w-full max-w-4xl border-b border-slate-700 pb-4 mb-6 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <p class="text-xs font-bold text-blue-400 tracking-widest uppercase">JANGAN HIGH ENGINEERING CLUB</p>
+            <h1 class="text-2xl md:text-3xl font-black">장안고 공학의 정석 <span class="text-blue-400">-</span> 검 강화하기</h1>
+            <p class="text-xs text-slate-400 mt-1">26 장안고 동아리 축제 | 강화 최고 단계를 달성하고 경품을 쟁취하라!</p>
+        </div>
+        <button onclick="resetPrizes()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-600 px-3 py-2 rounded text-slate-300 transition">
+            ⚙️ 리셋 (어드민 테스트용)
+        </button>
+    </header>
+
+    <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6 flex-1">
+        
+        <!-- 메인 게임 영역 -->
+        <main class="md:col-span-2 bg-slate-800/60 border border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-between relative overflow-hidden">
+            
+            <div class="text-center mt-4">
+                <span id="sword-level-tag" class="text-sm font-bold bg-blue-950 text-blue-400 border border-blue-800 px-3 py-1 rounded-full">+0 단계</span>
+                <h2 id="sword-name" class="text-2xl md:text-3xl font-extrabold mt-3 text-slate-200">녹슨 단검</h2>
+                <p id="success-rate" class="text-xs text-emerald-400 mt-1">다음 성공 확률: 100%</p>
+            </div>
+
+            <div class="my-8 flex items-center justify-center h-48 w-full">
+                <div id="sword-icon" class="text-8xl transition-all duration-300 sword-glow">🗡️</div>
+            </div>
+
+            <p id="status-msg" class="text-sm text-slate-400 h-6 text-center font-medium">버튼 눌러서 강화 시작해라.</p>
+
+            <div class="w-full mt-4 flex gap-3">
+                <button id="enhance-btn" onclick="enhanceSword()" class="flex-1 bg-blue-600 hover:bg-blue-500 font-bold py-4 rounded-xl text-lg shadow-lg shadow-blue-900/50 transition active:scale-95">
+                    강화하기
+                </button>
+            </div>
+        </main>
+
+        <!-- 사이드바 (경품 & 랭킹) -->
+        <aside class="flex flex-col gap-6">
+            
+            <!-- 경품 현황 -->
+            <section class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5">
+                <h3 class="font-bold text-sm text-slate-300 border-b border-slate-700 pb-2 mb-3">🎁 실시간 경품 현황</h3>
+                <ul class="space-y-3 text-xs">
+                    <li class="flex justify-between items-center bg-slate-900/50 p-2.5 rounded-lg border border-slate-700/50">
+                        <div>
+                            <p class="font-bold text-amber-400">15강 달성시</p>
+                            <p class="text-slate-400">매점 빵/음료 교환권</p>
+                        </div>
+                        <span id="prize-15" class="font-bold bg-amber-950 text-amber-400 border border-amber-800 px-2 py-1 rounded">남음 (1명)</span>
+                    </li>
+                    <li class="flex justify-between items-center bg-slate-900/50 p-2.5 rounded-lg border border-slate-700/50">
+                        <div>
+                            <p class="font-bold text-purple-400">12강 달성시</p>
+                            <p class="text-slate-400">마이쮸 / 새콤달콤 1곽</p>
+                        </div>
+                        <span id="prize-12" class="font-bold bg-purple-950 text-purple-400 border border-purple-800 px-2 py-1 rounded">3명 남음</span>
+                    </li>
+                    <li class="flex justify-between items-center bg-slate-900/50 p-2.5 rounded-lg border border-slate-700/50">
+                        <div>
+                            <p class="font-bold text-blue-400">10강 달성시</p>
+                            <p class="text-slate-400">츄파춥스 사탕 1개</p>
+                        </div>
+                        <span id="prize-10" class="font-bold bg-blue-950 text-blue-400 border border-blue-800 px-2 py-1 rounded">10명 남음</span>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 리더보드 -->
+            <section class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 flex-1">
+                <h3 class="font-bold text-sm text-slate-300 border-b border-slate-700 pb-2 mb-3">🏆 명예의 전당 (TOP 5)</h3>
+                <ol id="leaderboard" class="space-y-2 text-xs text-slate-300">
+                    <li class="text-slate-500 text-center py-4">등록된 기록이 없음.</li>
+                </ol>
+            </section>
+        </aside>
+    </div>
+
+    <footer class="pt-6 text-center text-xs text-slate-500">
+        확률은 리셋되지 않으며 강화 실패 시 어느 단계에서든 검이 펑 터져서 파괴됩니다.
+    </footer>
+
+    <!-- 자바스크립트 게임 로직 -->
+    <script>
+        let currentLevel = 0;
+        const rates = [100, 100, 95, 95, 90, 90, 80, 75, 75, 70, 70, 65, 65, 60, 60];
+        const swordNames = [
+            "녹슨 단검", "초보자의 숏소드", "강철 수련검", "기사의 롱소드", "은빛 세이버",
+            "마법의 카타나", "화염의 플레이브", "빙결의 룬블레이드", "번개의 엑스칼리버", "용살자의 대검",
+            "공학자의 플라즈마 소드", "차원의 보검", "신성한 엔지니어 소드", "장안의 마스터 소드", "전설의 공학 마스터 소드", "최종 신화의 검"
+        ];
+
+        let prizes = JSON.parse(localStorage.getItem('sword_prizes')) || { lvl15: 1, lvl12: 3, lvl10: 10 };
+        let leaderboard = JSON.parse(localStorage.getItem('sword_leaderboard')) || [];
+
+        function updateUI() {
+            document.getElementById('sword-level-tag').innerText = `+${currentLevel} 단계`;
+            document.getElementById('sword-name').innerText = swordNames[Math.min(currentLevel, swordNames.length - 1)];
+            
+            if (currentLevel < 15) {
+                document.getElementById('success-rate').innerText = `다음 성공 확률: ${rates[currentLevel]}%`;
+            } else {
+                document.getElementById('success-rate').innerText = `만렙 달성 ㄷㄷ`;
+            }
+
+            const swordIcon = document.getElementById('sword-icon');
+            if (currentLevel >= 12) {
+                swordIcon.className = "text-8xl transition-all duration-300 sword-glow-high text-amber-400";
+            } else if (currentLevel >= 7) {
+                swordIcon.className = "text-8xl transition-all duration-300 sword-glow text-purple-400";
+            } else {
+                swordIcon.className = "text-8xl transition-all duration-300 sword-glow text-blue-400";
+            }
+
+            document.getElementById('prize-15').innerText = prizes.lvl15 > 0 ? `남음 (${prizes.lvl15}명)` : '마감';
+            document.getElementById('prize-12').innerText = prizes.lvl12 > 0 ? `${prizes.lvl12}명 남음` : '마감';
+            document.getElementById('prize-10').innerText = prizes.lvl10 > 0 ? `${prizes.lvl10}명 남음` : '마감';
+
+            updateLeaderboardUI();
+        }
+
+        function enhanceSword() {
+            if (currentLevel >= 15) {
+                alert("이미 만렙(+15) 찍음 ㅋㅋㅋ");
+                return;
+            }
+
+            const rate = rates[currentLevel];
+            const rand = Math.random() * 100;
+            const msg = document.getElementById('status-msg');
+            const icon = document.getElementById('sword-icon');
+
+            icon.classList.add('animate-shake');
+            setTimeout(() => icon.classList.remove('animate-shake'), 300);
+
+            if (rand < rate) {
+                currentLevel++;
+                msg.innerText = `✨ 오 성공함! (+${currentLevel} 단계)`;
+                msg.className = "text-sm text-emerald-400 font-bold h-6 text-center";
+
+                checkPrize(currentLevel);
+            } else {
+                const failedLevel = currentLevel;
+                currentLevel = 0;
+                msg.innerText = `💥 아 검 터짐 ㅋㅋㅋ (+${failedLevel} 단계에서 파괴됨)`;
+                msg.className = "text-sm text-rose-500 font-bold h-6 text-center";
+
+                if (failedLevel >= 5) {
+                    saveRecord(failedLevel);
+                }
+            }
+            updateUI();
+        }
+
+        function checkPrize(lvl) {
+            let winMsg = "";
+            if (lvl === 15 && prizes.lvl15 > 0) {
+                prizes.lvl15--;
+                winMsg = "🎉 15강 성공! 매점 빵/음료 교환권 획득 개이득";
+            } else if (lvl === 12 && prizes.lvl12 > 0) {
+                prizes.lvl12--;
+                winMsg = "🎉 12강 성공! 마이쮸/새콤달콤 1곽 획득!";
+            } else if (lvl === 10 && prizes.lvl10 > 0) {
+                prizes.lvl10--;
+                winMsg = "🎉 10강 성공! 츄파춥스 사탕 획득!";
+            }
+
+            if (winMsg) {
+                localStorage.setItem('sword_prizes', JSON.stringify(prizes));
+                setTimeout(() => alert(winMsg), 100);
+            }
+        }
+
+        function saveRecord(lvl) {
+            setTimeout(() => {
+                const name = prompt(`검 터졌음 ㅋㅋㅋ 기록(+${lvl}강) 남길 거면 이름이나 학번 써라:`);
+                if (name && name.trim() !== '') {
+                    leaderboard.push({ name: name.trim().slice(0, 8), level: lvl, date: new Date().toLocaleTimeString() });
+                    leaderboard.sort((a, b) => b.level - a.level);
+                    leaderboard = leaderboard.slice(0, 5);
+                    localStorage.setItem('sword_leaderboard', JSON.stringify(leaderboard));
+                    updateLeaderboardUI();
+                }
+            }, 100);
+        }
+
+        function updateLeaderboardUI() {
+            const list = document.getElementById('leaderboard');
+            if (leaderboard.length === 0) {
+                list.innerHTML = `<li class="text-slate-500 text-center py-4">등록된 기록이 없음.</li>`;
+                return;
+            }
+            list.innerHTML = leaderboard.map((item, index) => `
+                <li class="flex justify-between items-center bg-slate-900/40 px-3 py-2 rounded">
+                    <span><strong class="text-blue-400 mr-2">${index + 1}.</strong>${item.name}</span>
+                    <span class="font-bold text-amber-400">+${item.level}강</span>
+                </li>
+            `).join('');
+        }
+
+        function resetPrizes() {
+            if (confirm("경품 남은 수량이랑 랭킹 기록 진짜 리셋함?")) {
+                prizes = { lvl15: 1, lvl12: 3, lvl10: 10 };
+                leaderboard = [];
+                localStorage.removeItem('sword_prizes');
+                localStorage.removeItem('sword_leaderboard');
+                updateUI();
+                alert("리셋 완.");
+            }
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
