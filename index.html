@@ -160,7 +160,7 @@
   const addScoreBtn = document.getElementById("add-score-btn");
   const closeDevBtn = document.getElementById("close-dev-btn");
 
-  const DEV_PASSWORD = "1234"; // 개발자 비밀번호 설정
+  const DEV_PASSWORD = "1018"; // 개발자 비밀번호 설정
 
   const gridSize = 20;
   const tileCount = canvas.width / gridSize;
@@ -283,8 +283,8 @@
     leaderboard.push({ name, score });
     // 점수 높은 순으로 정렬
     leaderboard.sort((a, b) => b.score - a.score);
-    // 상위 5명만 유지
-    leaderboard = leaderboard.slice(0, 5);
+    // 상위 10명만 유지
+    leaderboard = leaderboard.slice(0, 10);
     updateLeaderboardUI();
   }
 
